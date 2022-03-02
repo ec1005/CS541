@@ -38,15 +38,16 @@ bool simJoin::readData(const string &filename)
 
 bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsigned, unsigned> > &results) 
 {
-  //cout << "called";
+  
   lengthFilter(threshold);
-  for( auto i: simJoin::filteredData)
+  
+  cout << "Filtered Data Length after L Filter " << filteredData.size() << endl;
+
+  for( auto i: filteredData)
   {
     
     int indr = get<0>(i), inds = get<1>(i);
     string r = data[indr], s = data[inds];
-
-    //cout << "FILTERED DATA 1 " << r << " " << s << endl;
 
     tuple<vector<string>, vector<unsigned>> rPartsRes = rpartition(r,threshold);
     vector<string> rParts = get<0>(rPartsRes);
@@ -57,23 +58,23 @@ bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsign
       bool isPair = spartition(s, rParts[i], threshold, rIndices[i], i+1, delta);
       if(isPair)
       {
-        simJoin::partFilteredData.push_back(make_tuple(indr, inds));
+        partFilteredData.push_back(make_tuple(indr, inds));
+        break;
       }
     }
 
   }
+  
+  cout << "Filtered Data Length after P Filter " << partFilteredData.size() << endl;
 
-  for( auto i: simJoin::partFilteredData)
+  for( auto i: partFilteredData)
   {
-    //cout << "pFILTER " << endl;
-    //cout << data[get<0>(i)] << " " << data[get<1>(i)] << endl;
+    
     int indr = get<0>(i), inds = get<1>(i);
     string r = data[indr], s = data[inds];
-    //cout << r << s << endl;
     
     int editDist = minDistance(r, s);
 
-    //cout << "editdist " << r << " " << s << endl;
     if(editDist <= threshold)
     {
       triple<unsigned, unsigned, unsigned> triples = {(unsigned)indr, (unsigned)inds, (unsigned)editDist};
@@ -81,14 +82,7 @@ bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsign
     }
      
   }
-  //cout << "out" << endl;
-  cout << "length filtered " << filteredData.size() << " pFD " << partFilteredData.size() << endl;
-  cout << "Triples length " << results.size() << endl;
-  //tuple<vector<string>, vector<unsigned>> rPartsRes = rpartition("avataresha",1);
-  //vector<string> rParts = get<0>(rPartsRes);
-  //vector<unsigned> rIndices = get<1>(rPartsRes);
-  //bool isPair = spartition("avataresha", "at", 4, 2, 3, 1);
-  //cout << "isPair " << isPair << endl;
+
 	return true;
 }
 
@@ -99,7 +93,7 @@ bool simJoin::lengthFilter(unsigned threshold)
   for (int i=0; i<size; i++){
     for(int j=i+1; j<size && data[j].size() - data[i].size() <= threshold ; j++){
       if(data[j].size() - data[i].size() <= threshold){
-        simJoin::filteredData.push_back(make_tuple(i,j));
+        filteredData.push_back(make_tuple(i,j));
       }
     }
   }
@@ -158,12 +152,8 @@ bool simJoin::spartition(string s, string sub, int t, int start, int i, int delt
     int nstart = max(0,max(start - (i - 1),start + delta - (t + 1 - i)));
     int nend = min((int)s.length() - 1,min(start + (i - 1),start + delta + (t + 1 - i)));
     string s1 = s.substr(nstart, nend-nstart+1+sub.length());
-    int pos = s.find(sub);
-    //std::cout << "nstart " + std::to_string(nstart) << std::endl;
-    //std::cout << "nend " + std::to_string(nend) << std::endl;
-    //std::cout << pos << std::endl;
+    int pos = s1.find(sub);
     
-
     return nstart+pos >= nstart && nstart+pos <=nend;
 }
 
